@@ -84,9 +84,9 @@ class MovieInfoProvider {
         return new Promise((resolve, reject) => {
             this._genrePromise.then(genres => {
                 let result = [];
-                for (let inputGenre in inputGenres) {
+                for (let inputGenre of inputGenres) {
                     for (let genre of genres) {
-                        if (genre.name.toLowerCase() === name) {
+                        if (genre.name.toLowerCase() === inputGenre.trim().toLowerCase()) {
                             result.push(genre.id);
                             break;
                         }
@@ -203,16 +203,20 @@ class MovieInfoProvider {
                     qs,
                     json: true
                 }).then(result => {
-                    this._formatMovieData(result.results, directorIds).then(resolve).catch(reject);
+                    this._formatMovieData(result.results, directorIds).then(results => {
+                        if (limit) {
+                            results = results.slice(0, limit);    
+                        }                        
+                        resolve(results);
+                    }).catch(reject);
                 }).catch(reject);
-
             }, reject).catch(reject);
         });
     }
 }
 
 let movieInfo = new MovieInfoProvider();
-movieInfo.execute([{ director: ['James Cameron'] }], 10).then(result => console.dir(result, { depth: null })).catch(console.error);
+movieInfo.execute([{ director: ['Frank Darabont'], cast: ['Tim Robbins'], genre: ['Drama']}], 2).then(result => console.dir(result, { depth: null })).catch(console.error);
 // movieInfo.execute([{ name: 'Terminator 2: Judgment Day' }]).then(console.log).catch(console.error);
 // movieInfo.execute([{ director: 'James Cameron', name: 'Terminator' }, {name: 'Titanic'}]).then(console.log).catch(error => {    
 //     if (error.stack) console.error(error.stack);
